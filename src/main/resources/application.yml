@@ -57,3 +57,10 @@ redisson:
     address: "redis://redis:6379"
     connectionMinimumIdleSize: 10
     connectionPoolSize: 64
+
+logging:
+  level:
+    root: INFO
+    com.wastech.url_shortener: DEBUG # Your application's base package
+    org.hibernate.SQL: DEBUG         # To see SQL statements
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
