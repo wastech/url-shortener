@@ -28,6 +28,7 @@ public class ShorteningService {
     }
 
     public String shortenUrl(String longUrl) {
+        log.info("Long Url", longUrl);
         // 1. Check if the long URL has already been shortened (to avoid duplicates for the same long URL)
         Optional<ShortenedUrl> existing = shortenedUrlRepository.findByLongUrl(longUrl);
         if (existing.isPresent()) {
