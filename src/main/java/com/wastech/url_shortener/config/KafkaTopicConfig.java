@@ -21,7 +21,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic urlPersistenceTopic() {
-        return new NewTopic("url-persistence-topic", 3, (short) 1); // 3 partitions, 1 replica
+        return new NewTopic("url-persistence-topic", 3, (short) 1);
     }
 
     // Consumer Factory for KeyRequest
@@ -31,7 +31,7 @@ public class KafkaTopicConfig {
         return new DefaultKafkaConsumerFactory<>(
             kafkaConsumerProperties(),
             new org.apache.kafka.common.serialization.StringDeserializer(),
-            new JsonDeserializer<>(KeyRequest.class, false) // false means not trusted
+            new JsonDeserializer<>(KeyRequest.class, false)
         );
     }
 
@@ -44,15 +44,13 @@ public class KafkaTopicConfig {
         return factory;
     }
 
-    // This is typically provided by Spring Boot's autoconfiguration for Kafka.
-    // However, if you need custom properties, you can define them here.
     private java.util.Map<String, Object> kafkaConsumerProperties() {
         java.util.Map<String, Object> props = new java.util.HashMap<>();
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, "url-shortener-group");
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.wastech.url_shortener.model"); // Crucial for JsonDeserializer
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.wastech.url_shortener.model");
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         return props;
     }

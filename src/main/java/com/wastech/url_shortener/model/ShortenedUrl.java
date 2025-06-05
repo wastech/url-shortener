@@ -23,7 +23,7 @@ public class ShortenedUrl {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "short_code", nullable = false, unique = true, length = 10) // Unique and indexed for fast lookups
+    @Column(name = "short_code", nullable = false, unique = true, length = 10)
     private String shortCode;
 
     @Column(name = "long_url", nullable = false, length = 2048)
@@ -32,14 +32,12 @@ public class ShortenedUrl {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    // Optional: for tracking clicks or expiration
     @Column(name = "click_count")
     private Long clickCount = 0L;
 
     @Column(name = "expires_at")
-    private LocalDateTime expiresAt; // Optional: URL expiration
+    private LocalDateTime expiresAt;
 
-    // Constructor for initial creation
     public ShortenedUrl(String shortCode, String longUrl) {
         this.shortCode = shortCode;
         this.longUrl = longUrl;

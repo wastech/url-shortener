@@ -51,7 +51,6 @@ management:
     tags:
       application: ${spring.application.name}
 
-# FIXED: Redisson configuration - changed localhost to redis
 redisson:
   singleServerConfig:
     address: "redis://redis:6379"
@@ -61,6 +60,8 @@ redisson:
 logging:
   level:
     root: INFO
-    com.wastech.url_shortener: DEBUG # Your application's base package
-    org.hibernate.SQL: DEBUG         # To see SQL statements
+    com.wastech.url_shortener: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.validation: DEBUG
+    org.hibernate.validator: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE

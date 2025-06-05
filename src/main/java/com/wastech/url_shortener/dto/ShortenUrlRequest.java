@@ -1,8 +1,8 @@
-// src/main/java/com/wastech/url_shortener/dto/ShortenUrlRequest.java
 package com.wastech.url_shortener.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import org.hibernate.validator.constraints.URL; // Important: ensure this import is correct
+import jakarta.validation.constraints.Pattern;
+import org.hibernate.validator.constraints.URL;
 
 import lombok.Data; // Assuming you have Lombok
 import lombok.NoArgsConstructor;
@@ -13,7 +13,10 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ShortenUrlRequest {
 
-    @NotBlank(message = "Long URL cannot be empty")
-//    @URL(message = "Invalid URL format") // Using standard Hibernate @URL validator
+    @NotBlank(message = "URL cannot be blank")
+    @Pattern(
+        regexp = "^https?://(?:[-\\w.])+(?:\\:[0-9]+)?(?:/(?:[\\w/_.])*(?:\\?(?:[\\w&=%.])*)?(?:#(?:[\\w.])*)?)?$",
+        message = "Invalid URL format. URL must start with http:// or https://"
+    )
     private String longUrl;
 }

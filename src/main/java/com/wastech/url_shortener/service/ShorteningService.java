@@ -21,7 +21,7 @@ public class ShorteningService {
     private final KafkaTemplate<String, KeyRequest> kafkaTemplate;
     private static final String URL_PERSISTENCE_TOPIC = "url-persistence-topic";
 
-    @Transactional(readOnly = true) // This transaction is for the read-only check
+    @Transactional(readOnly = true)
     public Optional<String> getLongUrl(String shortCode) {
         return shortenedUrlRepository.findByShortCode(shortCode)
             .map(ShortenedUrl::getLongUrl);
@@ -45,7 +45,7 @@ public class ShorteningService {
 
         // 3. Publish the mapping to Kafka for asynchronous persistence
         KeyRequest keyRequest = new KeyRequest(shortCode, longUrl);
-        kafkaTemplate.send(URL_PERSISTENCE_TOPIC, shortCode, keyRequest) // Using shortCode as key for partitioning
+        kafkaTemplate.send(URL_PERSISTENCE_TOPIC, shortCode, keyRequest)
             .whenComplete((result, ex) -> {
                 if (ex == null) {
                     log.info("Successfully published mapping to Kafka: ShortCode={}, LongUrl={}", shortCode, longUrl);
@@ -53,11 +53,9 @@ public class ShorteningService {
                     log.error("Failed to publish mapping to Kafka: ShortCode={}, LongUrl={}, Error={}",
                         shortCode, longUrl, ex.getMessage(), ex);
                     // TODO: Implement a retry mechanism or dead-letter queue for failed Kafka sends
-                    // For a real system, you might want to return an error to the client here
-                    // if you can't guarantee persistence. For now, it's fire-and-forget for client.
                 }
             });
 
-        return shortCode; // Return the short code immediately to the user
+        return shortCode;
     }
 }

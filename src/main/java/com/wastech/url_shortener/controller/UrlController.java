@@ -14,32 +14,39 @@ import org.springframework.web.servlet.view.RedirectView;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-// @Validated // No longer strictly needed here if @Valid is used on DTO, but can keep if other method validations exist
 public class UrlController {
 
     private final ShorteningService shorteningService;
 
-    // Endpoint for shortening a URL
     @PostMapping("/shorten")
-    public ResponseEntity<String> shortenUrl(@Valid @RequestBody ShortenUrlRequest request) { // Use @Valid on DTO
+    public ResponseEntity<String> shortenUrl(@Valid @RequestBody ShortenUrlRequest request) {
         String longUrl = request.getLongUrl();
-        log.info("Received request to shorten URL: {}", longUrl);
+
+        // Enhanced debugging
+        log.info("=== URL Shortening Request Debug ===");
+        log.info("Request object: {}", request);
+        log.info("Long URL received: '{}'", longUrl);
+        log.info("Long URL is null: {}", longUrl == null);
+        log.info("Long URL is blank: {}", longUrl == null || longUrl.trim().isEmpty());
+        if (longUrl != null) {
+            log.info("Long URL length: {}", longUrl.length());
+            log.info("Long URL starts with http: {}", longUrl.startsWith("http"));
+            log.info("Long URL starts with https: {}", longUrl.startsWith("https"));
+        }
+        log.info("=== End Debug ===");
+
         try {
             String shortCode = shorteningService.shortenUrl(longUrl);
-            // In a real app, you'd return the full shortened URL like "https://yourdomain.com/shortCode"
-            // For now, returning just the shortCode as per your current code.
             return ResponseEntity.ok(shortCode);
         } catch (Exception e) {
             log.error("Error shortening URL {}: {}", longUrl, e.getMessage(), e);
-            // For production, you might want more specific error messages or custom error DTOs
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error processing your request: " + e.getMessage());
         }
     }
 
-    // Endpoint for redirecting from short URL to long URL
     @GetMapping("/{shortCode}")
-    public RedirectView redirectToLongUrl(@PathVariable String shortCode) { // Removed HttpServletResponse
+    public RedirectView redirectToLongUrl(@PathVariable String shortCode) {
         log.info("Received request for short code: {}", shortCode);
         String longUrl = shorteningService.getLongUrl(shortCode)
             .orElse(null);
@@ -47,12 +54,11 @@ public class UrlController {
         if (longUrl != null) {
             RedirectView redirectView = new RedirectView();
             redirectView.setUrl(longUrl);
-            redirectView.setStatusCode(HttpStatus.MOVED_PERMANENTLY); // 301 Moved Permanently
+            redirectView.setStatusCode(HttpStatus.MOVED_PERMANENTLY);
             log.info("Redirecting short code {} to long URL {}", shortCode, longUrl);
             return redirectView;
         } else {
             log.warn("Short code {} not found.", shortCode);
-            // Throwing ResponseStatusException results in a proper HTTP 404 response
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Short URL not found.");
         }
     }

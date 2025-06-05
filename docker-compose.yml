@@ -3,8 +3,8 @@ version: '3.8'
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:16-alpine # Recommended to use a specific, stable version like 16-alpine
-    container_name: url-shortener-postgres # Good to explicitly name containers
+    image: postgres:16-alpine
+    container_name: url-shortener-postgres
     environment:
       POSTGRES_DB: url_shortener_db
       POSTGRES_USER: postgres
@@ -14,13 +14,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d url_shortener_db"] # Added -d for specific DB
-      interval: 5s # More frequent check helps with startup
+      test: ["CMD-SHELL", "pg_isready -U postgres -d url_shortener_db"]
+      interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 20s # Crucial for giving Postgres time to fully initialize
+      start_period: 20s
     networks:
-      - url-shortener-net # Explicitly define network for services
+      - url-shortener-net
 
   # Redis for Key Generation Service (KGS) and Caching
   redis:
@@ -40,15 +40,15 @@ services:
       - url-shortener-net
   # Zookeeper (required for Kafka)
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0 # Use a specific version, `latest` can be risky
-    container_name: url-shortener-zookeeper # Explicitly name container
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: url-shortener-zookeeper
     ports:
       - "2181:2181"
 #      - "8081:8080"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    volumes: # <--- ADD THIS SECTION FOR ZK DATA PERSISTENCE
+    volumes:
       - zookeeper_data:/var/lib/zookeeper/data
       - zookeeper_log:/var/lib/zookeeper/log
     healthcheck:
@@ -56,43 +56,43 @@ services:
         interval: 10s
         timeout: 5s
         retries: 5
-        start_period: 15s # Give Zookeeper time to start
+        start_period: 15s
     networks:
-      - url-shortener-net # Explicitly define network
+      - url-shortener-net
 
   # Kafka Broker
   kafka:
-    image: confluentinc/cp-kafka:7.5.0 # Use a specific version
-    container_name: url-shortener-kafka # Explicitly name container
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: url-shortener-kafka
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093 # Added PLAINTEXT_HOST for external access if needed
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT # Required for advertised listeners
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0 # Speeds up consumer group rebalance
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     ports:
       - "9092:9092"
-      - "9093:9093" # Expose external port
+      - "9093:9093"
     depends_on:
       zookeeper:
-        condition: service_healthy # Depend on Zookeeper being healthy
-    healthcheck: # Added healthcheck for Kafka
+        condition: service_healthy
+    healthcheck:
       test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:9092", "--list"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s # Kafka can take a while to start
+      start_period: 30s
     networks:
-      - url-shortener-net # Explicitly define network
+      - url-shortener-net
 
   # Spring Boot Application
-  app: # Renamed service from 'url-shortener' to 'app' for common convention and clarity
+  app:
     build:
-      context: . # Correct build context: The directory where docker-compose.yml and Dockerfile are
-      dockerfile: Dockerfile # Correct Dockerfile path
-    container_name: url-shortener-app # Explicitly name container
+      context: .
+      dockerfile: Dockerfile
+    container_name: url-shortener-app
     ports:
       - "8081:8080"
     depends_on:
@@ -103,16 +103,12 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      # Removed SPRING_PROFILES_ACTIVE=docker - this would look for application-docker.yml
-      # Instead, we directly provide key Spring Boot configurations as environment variables
-      # These will override values in application.yml if present, or provide default values
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/url_shortener_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: admin@123
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      # Ensure trusted packages for Kafka JSON deserialization match your actual package
       SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "com.wastech.url_shortener.model"
     networks:
       - url-shortener-net
@@ -121,8 +117,8 @@ volumes:
   postgres_data:
   redis_data:
   pgadmin_data:
-  zookeeper_data: # <--- ADD THIS
-  zookeeper_log:  # <--- ADD THIS
+  zookeeper_data:
+  zookeeper_log:
 
 networks:
   url-shortener-net:
