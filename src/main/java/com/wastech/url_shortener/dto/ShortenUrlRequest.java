@@ -2,9 +2,8 @@ package com.wastech.url_shortener.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import org.hibernate.validator.constraints.URL;
 
-import lombok.Data; // Assuming you have Lombok
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 

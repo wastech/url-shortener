@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class UrlPersistenceConsumer {
 
     private final ShortenedUrlRepository shortenedUrlRepository;
-
     @KafkaListener(topics = "url-persistence-topic", groupId = "url-shortener-group", containerFactory = "kafkaListenerContainerFactory")
     @Transactional
     public void consumeUrlMapping(KeyRequest keyRequest) {

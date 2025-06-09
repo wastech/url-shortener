@@ -10,10 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 public class RedissonConfig {
-
     @Value("${redisson.singleServerConfig.address}")
     private String redissonAddress;
-
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();

@@ -24,7 +24,6 @@ public class Base62 {
         return num;
     }
 
-    // You might want to pad short codes to a minimum length, e.g., 6 characters
     public static String encodeWithPadding(long num, int minLength) {
         String encoded = encode(num);
         if (encoded.length() < minLength) {
