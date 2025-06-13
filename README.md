@@ -1,4 +1,4 @@
-# URL Shortener Service
+# URL Shortener 
 
 A high-performance, scalable URL shortening service built with Spring Boot. This service provides fast URL shortening and retrieval with Redis caching, Kafka-based asynchronous processing, and PostgreSQL persistence.
 
