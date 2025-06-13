@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+.env
+
+.git
+.mvn/wrapper/maven-wrapper.jar # Often downloaded by mvnw, no need to copy
+target/
+build/
+.idea/
+.vscode/
+*.iml
+*.log
+src/**/*.jar # Exclude any JARs generated within src (if any)
