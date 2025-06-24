@@ -2,46 +2,63 @@ spring:
   application:
     name: url-shortener
   datasource:
-    url: jdbc:postgresql://postgres:5432/url_shortener_db
-    username: postgres
-    password: admin@123
+    url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/url_shortener_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:admin@123}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      connection-timeout: 30000
-      idle-timeout: 60000
-      max-lifetime: 1800000
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      minimum-idle: ${DB_MIN_IDLE:5}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
+      idle-timeout: ${DB_IDLE_TIMEOUT:60000}
+      max-lifetime: ${DB_MAX_LIFETIME:1800000}
+    initialization-mode: always
+    continue-on-error: true
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        format_sql: false
-
-
+        format_sql: ${JPA_FORMAT_SQL:false}
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   redis:
-    host: redis
-    port: 6379
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD}
+    timeout: ${REDIS_TIMEOUT:2000ms}
+    jedis:
+      pool:
+        max-active: ${REDIS_POOL_MAX_ACTIVE:8}
+        max-idle: ${REDIS_POOL_MAX_IDLE:8}
+        min-idle: ${REDIS_POOL_MIN_IDLE:0}
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
-      retries: 3
+      retries: ${KAFKA_PRODUCER_RETRIES:3}
+      batch-size: ${KAFKA_PRODUCER_BATCH_SIZE:16384}
+      linger-ms: ${KAFKA_PRODUCER_LINGER_MS:5}
+      buffer-memory: ${KAFKA_PRODUCER_BUFFER_MEMORY:33554432}
     consumer:
-      group-id: url-shortener-group
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:url-shortener-group}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      auto-offset-reset: latest
-      enable-auto-commit: true
+      auto-offset-reset: ${KAFKA_CONSUMER_AUTO_OFFSET_RESET:latest}
+      enable-auto-commit: ${KAFKA_CONSUMER_AUTO_COMMIT:true}
       properties:
-        spring.json.trusted.packages:
+        spring.json.trusted.packages: ${KAFKA_TRUSTED_PACKAGES:com.wastech.url_shortener.model}
   main:
     allow-bean-definition-overriding: true
 
+# JWT Configuration
+app:
+  jwtSecret: ${JWT_SECRET:dGhpcyBpcyBhIHNlY3JldCBrZXkgZm9yIEpXVCB0b2tlbiBnZW5lcmF0aW9u}
+  jwtExpirationMs: ${JWT_EXPIRATION_MS:86400000}
+
+# Management endpoints
 management:
   endpoints:
     web:
@@ -51,17 +68,35 @@ management:
     tags:
       application: ${spring.application.name}
 
+# Redisson Configuration
 redisson:
   singleServerConfig:
-    address: "redis://redis:6379"
-    connectionMinimumIdleSize: 10
-    connectionPoolSize: 64
+    address: "redis://${REDIS_HOST:redis}:${REDIS_PORT:6379}"
+    connectionMinimumIdleSize: ${REDISSON_MIN_IDLE:10}
+    connectionPoolSize: ${REDISSON_POOL_SIZE:64}
 
+
+# Server configuration including GZIP compression
+server:
+  compression:
+    enabled: true
+    mime-types:
+      - application/json
+      - application/xml
+      - text/html
+      - text/xml
+      - text/plain
+      - text/css
+      - text/javascript
+      - application/javascript
+    min-response-size: 2KB
+
+# Logging Configuration
 logging:
   level:
-    root: INFO
-    com.wastech.url_shortener: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.springframework.validation: DEBUG
-    org.hibernate.validator: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    root: ${LOG_LEVEL_ROOT:INFO}
+    com.wastech.url_shortener: ${LOG_LEVEL_APP:DEBUG}
+    org.hibernate.SQL: ${LOG_LEVEL_HIBERNATE_SQL:DEBUG}
+    org.springframework.validation: ${LOG_LEVEL_VALIDATION:DEBUG}
+    org.hibernate.validator: ${LOG_LEVEL_HIBERNATE_VALIDATOR:DEBUG}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${LOG_LEVEL_HIBERNATE_BINDER:TRACE}

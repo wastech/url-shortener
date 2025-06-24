@@ -1,4 +1,4 @@
-package com.wastech.url_shortener.exception; // Or wherever you put exception handlers
+package com.wastech.url_shortener.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

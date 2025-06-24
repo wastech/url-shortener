@@ -6,19 +6,38 @@ services:
     image: postgres:16-alpine
     container_name: url-shortener-postgres
     environment:
-      POSTGRES_DB: url_shortener_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin@123
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d url_shortener_db"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h localhost -p 5432"]
       interval: 5s
       timeout: 5s
       retries: 5
       start_period: 20s
+    networks:
+      - url-shortener-net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: url-shortener-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'False'
+    ports:
+      - "${PGADMIN_PORT}:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     networks:
       - url-shortener-net
 
@@ -27,7 +46,7 @@ services:
     image: redis:7-alpine
     container_name: url-shortener-redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -38,13 +57,13 @@ services:
       start_period: 5s
     networks:
       - url-shortener-net
+
   # Zookeeper (required for Kafka)
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: url-shortener-zookeeper
     ports:
       - "2181:2181"
-#      - "8081:8080"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -52,11 +71,11 @@ services:
       - zookeeper_data:/var/lib/zookeeper/data
       - zookeeper_log:/var/lib/zookeeper/log
     healthcheck:
-        test: [ "CMD", "echo", "imok" ]
-        interval: 10s
-        timeout: 5s
-        retries: 5
-        start_period: 15s
+      test: ["CMD", "echo", "imok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     networks:
       - url-shortener-net
 
@@ -103,13 +122,27 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/url_shortener_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: admin@123
-      SPRING_REDIS_HOST: redis
-      SPRING_REDIS_PORT: 6379
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "com.wastech.url_shortener.model"
+      # Database Configuration
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      DATABASE_USERNAME: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # Kafka Configuration
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+
+      # Kafka Consumer Configuration
+      KAFKA_TRUSTED_PACKAGES: com.wastech.url_shortener.model
+
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE}
     networks:
       - url-shortener-net
 
@@ -123,3 +156,4 @@ volumes:
 networks:
   url-shortener-net:
     driver: bridge
+

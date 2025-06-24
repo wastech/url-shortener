@@ -24,7 +24,6 @@ public class KafkaTopicConfig {
         return new NewTopic("url-persistence-topic", 3, (short) 1);
     }
 
-    // Consumer Factory for KeyRequest
     @Bean
     public ConsumerFactory<String, KeyRequest> consumerFactory() {
         // Use DefaultKafkaConsumerFactory for JSON deserialization
@@ -35,7 +34,6 @@ public class KafkaTopicConfig {
         );
     }
 
-    // Container Factory for concurrent Kafka listeners
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, KeyRequest> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, KeyRequest> factory =

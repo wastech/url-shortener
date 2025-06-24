@@ -3,15 +3,17 @@ FROM openjdk:21-jdk-slim AS builder
 WORKDIR /app
 
 COPY mvnw .
-COPY .mvn .mvn
+COPY .mvn .mvn/
 COPY pom.xml .
 
-RUN ./mvnw dependency:go-offline -B
+RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -B
 
 COPY src src
 
-RUN ./mvnw clean package -DskipTests
+RUN --mount=type=cache,target=/root/.m2 ./mvnw clean package -DskipTests
 
+FROM openjdk:21-jdk-slim
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
-
-CMD ["java", "-jar", "target/url-shortener-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

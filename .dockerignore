@@ -1,0 +1,45 @@
+.git
+.gitignore
+
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+build/
+.gradle/
+*.iml # IntelliJ IDEA module files
+
+# Ignore IDE specific files and directories
+.idea/             # IntelliJ IDEA
+.vscode/           # Visual Studio Code
+.project           # Eclipse
+.classpath         # Eclipse
+.settings/         # Eclipse
+*.sublime-project  # Sublime Text
+*.sublime-workspace# Sublime Text
+
+# Ignore local environment files that might contain sensitive data
+.env
+*.env
+
+# Ignore log files
+*.log
+logs/              # Common directory for logs
+
+# Ignore temporary files/directories
+tmp/
+temp/
+
+*.mv.db
+*.trace.db
+
+Dockerfile
+
+README.md
+LICENSE
+
+.DS_Store
